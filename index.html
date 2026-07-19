@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>미니카 신호등 놀이</title>
+<style>
+:root{
+  --bg:#0b0f14;
+  --panel:#20262d;
+  --off:#343b43;
+  --red:#ff3131;
+  --yellow:#ffd21f;
+  --green:#00db63;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 50% 20%, #1c2632 0%, #0b0f14 58%, #05070a 100%);
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  overflow:hidden;
+  user-select:none;
+}
+.app{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  padding:18px;
+}
+.title{
+  font-size:clamp(24px,5vw,42px);
+  font-weight:800;
+  letter-spacing:-1px;
+}
+.scene{
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:clamp(24px,8vw,80px);
+}
+.signal-wrap,.ped-wrap{text-align:center}
+.signal{
+  width:clamp(150px,28vw,230px);
+  padding:20px 16px;
+  border-radius:28px;
+  background:linear-gradient(#323941,#1b2026);
+  border:5px solid #11171d;
+  box-shadow:0 15px 35px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.08);
+}
+.lamp{
+  position:relative;
+  width:clamp(88px,17vw,138px);
+  aspect-ratio:1;
+  margin:14px auto;
+  border-radius:50%;
+  background:var(--off);
+  border:7px solid #12171c;
+  box-shadow:inset 0 0 25px rgba(0,0,0,.7);
+}
+.lamp::before{
+  content:"";
+  position:absolute;
+  inset:12%;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.22),transparent 28%);
+}
+.lamp.red.on{background:var(--red);box-shadow:0 0 42px rgba(255,49,49,.95),inset 0 0 18px rgba(255,255,255,.3)}
+.lamp.yellow.on{background:var(--yellow);box-shadow:0 0 42px rgba(255,210,31,.95),inset 0 0 18px rgba(255,255,255,.3)}
+.lamp.green.on{background:var(--green);box-shadow:0 0 42px rgba(0,219,99,.95),inset 0 0 18px rgba(255,255,255,.3)}
+
+.ped{
+  width:clamp(125px,23vw,185px);
+  padding:16px;
+  border-radius:22px;
+  background:linear-gradient(#323941,#1b2026);
+  border:5px solid #11171d;
+  box-shadow:0 15px 35px rgba(0,0,0,.55);
+}
+.ped-box{
+  height:clamp(112px,20vw,160px);
+  margin:10px 0;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#252c33;
+  border:5px solid #12171c;
+  font-size:clamp(58px,11vw,95px);
+  filter:grayscale(1) brightness(.45);
+}
+.ped-box.on{
+  filter:none;
+  box-shadow:0 0 34px rgba(255,255,255,.25);
+}
+.label{
+  margin-top:10px;
+  font-size:clamp(16px,3vw,24px);
+  color:#dce4ec;
+}
+.status{
+  min-width:min(92vw,620px);
+  text-align:center;
+  padding:14px 20px;
+  border-radius:20px;
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.1);
+}
+.state{
+  font-size:clamp(30px,7vw,56px);
+  font-weight:900;
+}
+.timer{
+  margin-top:3px;
+  font-size:clamp(44px,11vw,86px);
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+}
+.guide{
+  font-size:clamp(16px,3.4vw,25px);
+  color:#d8e0e8;
+}
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+}
+button{
+  border:0;
+  border-radius:14px;
+  padding:12px 16px;
+  font-size:17px;
+  font-weight:700;
+  color:white;
+  background:#2e3945;
+  box-shadow:0 5px 14px rgba(0,0,0,.3);
+}
+button:active{transform:scale(.97)}
+.road{
+  width:min(94vw,760px);
+  height:72px;
+  border-radius:18px;
+  background:#2d3034;
+  border:4px solid #17191c;
+  position:relative;
+  overflow:hidden;
+}
+.road::before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:32px;
+  height:6px;
+  background:repeating-linear-gradient(90deg,#f4d84a 0 38px,transparent 38px 68px);
+}
+.car{
+  position:absolute;
+  left:10px;
+  bottom:9px;
+  font-size:44px;
+  transform:scaleX(-1);
+  transition:left .9s linear;
+}
+@media(max-width:640px){
+  .scene{gap:16px}
+  .app{gap:12px}
+  .road{height:62px}
+  .car{font-size:38px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="title">🚦 미니카 신호등 놀이</div>
+
+  <div class="scene">
+    <div class="signal-wrap">
+      <div class="signal">
+        <div id="red" class="lamp red"></div>
+        <div id="yellow" class="lamp yellow"></div>
+        <div id="green" class="lamp green"></div>
+      </div>
+      <div class="label">자동차 신호</div>
+    </div>
+
+    <div class="ped-wrap">
+      <div class="ped">
+        <div id="pedRed" class="ped-box">🚶‍♂️</div>
+        <div id="pedGreen" class="ped-box">🚶‍♂️</div>
+      </div>
+      <div class="label">보행자 신호</div>
+    </div>
+  </div>
+
+  <div class="status">
+    <div id="state" class="state">빨간불</div>
+    <div id="timer" class="timer">20</div>
+    <div id="guide" class="guide">자동차는 멈춰요!</div>
+  </div>
+
+  <div class="road"><div id="car" class="car">🚗</div></div>
+
+  <div class="controls">
+    <button id="soundBtn">🔇 소리 켜기</button>
+    <button id="pauseBtn">⏸️ 일시정지</button>
+    <button id="nextBtn">⏭️ 다음 신호</button>
+    <button id="fullBtn">⛶ 전체화면</button>
+  </div>
+</div>
+
+<script>
+const phases = [
+  {name:"빨간불", sec:20, light:"red", guide:"자동차는 멈춰요!", ped:"green"},
+  {name:"초록불", sec:20, light:"green", guide:"자동차 출발!", ped:"red"},
+  {name:"노란불", sec:3, light:"yellow", guide:"천천히 멈출 준비!", ped:"red"}
+];
+
+let index = 0;
+let remain = phases[0].sec;
+let paused = false;
+let soundOn = false;
+let audioCtx = null;
+let carPos = 2;
+
+const ids = ["red","yellow","green"];
+const car = document.getElementById("car");
+
+function beep(freq=880, duration=.09){
+  if(!soundOn) return;
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(.11,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime+duration);
+}
+
+function render(){
+  ids.forEach(id=>document.getElementById(id).classList.remove("on"));
+  const p=phases[index];
+  document.getElementById(p.light).classList.add("on");
+
+  const pedRed=document.getElementById("pedRed");
+  const pedGreen=document.getElementById("pedGreen");
+  pedRed.classList.remove("on");
+  pedGreen.classList.remove("on");
+  pedRed.style.color="#ff3c3c";
+  pedGreen.style.color="#17e26e";
+  (p.ped==="green"?pedGreen:pedRed).classList.add("on");
+
+  document.getElementById("state").textContent=p.name;
+  document.getElementById("timer").textContent=remain+"초";
+  document.getElementById("guide").textContent=p.guide;
+
+  if(p.light==="green" && !paused){
+    carPos += 9;
+    if(carPos>88) carPos=2;
+    car.style.left=carPos+"%";
+  }
+}
+
+function nextPhase(){
+  index=(index+1)%phases.length;
+  remain=phases[index].sec;
+  const tones={red:520,green:900,yellow:700};
+  beep(tones[phases[index].light],.16);
+  render();
+}
+
+setInterval(()=>{
+  if(paused) return;
+  remain--;
+  if(remain<0) nextPhase();
+  else{
+    if(phases[index].ped==="green" && remain<=5) beep(1150,.05);
+    render();
+  }
+},1000);
+
+document.getElementById("soundBtn").onclick=()=>{
+  soundOn=!soundOn;
+  document.getElementById("soundBtn").textContent=soundOn?"🔊 소리 끄기":"🔇 소리 켜기";
+  if(soundOn) beep(900,.12);
+};
+
+document.getElementById("pauseBtn").onclick=()=>{
+  paused=!paused;
+  document.getElementById("pauseBtn").textContent=paused?"▶️ 계속하기":"⏸️ 일시정지";
+};
+
+document.getElementById("nextBtn").onclick=nextPhase;
+
+document.getElementById("fullBtn").onclick=()=>{
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }else{
+    document.exitFullscreen().catch(()=>{});
+  }
+};
+
+render();
+</script>
+</body>
+</html>
