@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#06111e">
+<title>동진이 신호등 놀이 3.0</title>
+<style>
+:root{
+  --red:#ff4141; --yellow:#ffd43b; --green:#1de27f;
+  --panel:#07121ee8; --text:#f7fbff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#06111e;color:var(--text);
+font-family:system-ui,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+button{font:inherit}
+#app{
+  width:100%;height:100dvh;overflow:hidden;
+  display:grid;grid-template-rows:auto 1fr auto;
+  background:linear-gradient(#2d6ea5 0 45%,#183044 45% 46%,#2a3037 46% 100%);
+}
+header{
+  min-height:52px;padding:max(8px,env(safe-area-inset-top)) 12px 6px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:#06111ee8;border-bottom:1px solid #ffffff16;
+}
+.title{font-weight:1000;font-size:clamp(18px,3.8vw,28px);letter-spacing:-.04em}
+.header-actions{display:flex;gap:8px}
+.hbtn{
+  width:42px;height:42px;border-radius:14px;border:1px solid #ffffff20;
+  background:#ffffff10;color:white;font-size:22px
+}
+
+main{position:relative;overflow:hidden;min-height:0}
+.sky{position:absolute;inset:0 0 48% 0;background:linear-gradient(#2e72ab,#8bd0ee)}
+.sun{position:absolute;right:6%;top:8%;width:min(10vw,70px);aspect-ratio:1;border-radius:50%;
+background:#ffe36e;box-shadow:0 0 35px #ffe36eaa}
+.city{position:absolute;left:0;right:0;bottom:48%;height:20%;display:flex;align-items:flex-end;gap:3px;opacity:.82}
+.b{flex:1;min-width:40px;background:linear-gradient(#587089,#2c3b49);position:relative}
+.b:after{content:"";position:absolute;inset:8px;background:repeating-linear-gradient(90deg,#ffe98b 0 6px,transparent 6px 15px),
+repeating-linear-gradient(#0000 0 10px,#0006 10px 12px)}
+.road{position:absolute;left:0;right:0;bottom:0;height:48%;background:linear-gradient(#454a50,#20252b)}
+.sidewalk{position:absolute;top:0;left:0;right:0;height:48px;background:repeating-linear-gradient(90deg,#c9cdd1 0 52px,#e1e4e7 52px 104px);border-bottom:6px solid #f4d35e}
+.lane{position:absolute;left:0;right:0;top:68%;height:7px;background:repeating-linear-gradient(90deg,#fff 0 70px,transparent 70px 125px)}
+.stopline{position:absolute;left:35%;top:48px;width:9px;height:calc(100% - 48px);background:#fff}
+.crosswalk{position:absolute;left:43%;top:48px;width:18%;height:calc(100% - 48px);background:repeating-linear-gradient(90deg,#fff 0 18px,transparent 18px 34px);opacity:.9}
+
+.signal{position:absolute;left:4%;top:4%;width:min(28vw,210px);z-index:5;filter:drop-shadow(0 14px 20px #0008)}
+.head{background:linear-gradient(145deg,#27333e,#070b0f);border:5px solid #030609;border-radius:28px;padding:10px;display:grid;gap:9px}
+.lamp{aspect-ratio:1;border-radius:50%;background:#252b31;border:7px solid #05080a;box-shadow:inset 0 0 22px #000}
+.lamp.on.red{background:radial-gradient(circle,#ff7b7b,#ff2525 60%,#900000);box-shadow:0 0 30px #ff4141,inset 0 0 18px #850000}
+.lamp.on.yellow{background:radial-gradient(circle,#fff19a,#ffd12a 60%,#9a7000);box-shadow:0 0 30px #ffd43b,inset 0 0 18px #8d6500}
+.lamp.on.green{background:radial-gradient(circle,#8affbd,#10dc72 60%,#006f35);box-shadow:0 0 30px #1de27f,inset 0 0 18px #00642f}
+.pole{width:20px;height:34vh;max-height:360px;margin:auto;background:linear-gradient(90deg,#555,#ddd 50%,#666)}
+.base{width:70px;height:19px;border-radius:8px;background:#242a30;margin:auto}
+
+.status{position:absolute;right:4%;top:6%;width:min(42vw,300px);z-index:6;
+background:#07121ee8;border:1px solid #ffffff20;border-radius:22px;padding:14px;text-align:center;
+box-shadow:0 14px 34px #0008;backdrop-filter:blur(12px)}
+.state{font-weight:1000;font-size:clamp(26px,6vw,46px);line-height:1}
+.timer{font-weight:1000;font-size:clamp(54px,13vw,100px);line-height:.95;margin:8px 0}
+.guide{font-weight:900;font-size:clamp(14px,3vw,21px)}
+.progress{height:8px;background:#ffffff18;border-radius:99px;overflow:hidden;margin-top:12px}
+.progress div{height:100%;transform-origin:left}
+
+.ped{position:absolute;right:5%;top:43%;z-index:6;width:min(20vw,125px);background:#0a1218;border:4px solid #030609;border-radius:16px;padding:7px;text-align:center}
+.ped small{display:block;font-size:10px;color:#c8d9e8}
+.ped-screen{margin-top:4px;aspect-ratio:1;background:#020405;border-radius:9px;display:grid;place-items:center;font-size:clamp(36px,8vw,62px)}
+.ped.red .ped-screen{color:#ff4f4f;text-shadow:0 0 16px #ff3333}
+.ped.green .ped-screen{color:#29ef8b;text-shadow:0 0 16px #18db77}
+
+.car{position:absolute;bottom:12%;left:22%;z-index:4;font-size:clamp(52px,14vw,110px);filter:drop-shadow(0 10px 8px #0008);
+transition:left .9s cubic-bezier(.2,.75,.2,1),transform .25s}
+.car2{bottom:28%;left:12%;font-size:clamp(40px,10vw,78px);transition-duration:1.15s}
+.car.moving{animation:bob .34s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-4px) rotate(-1deg)}}
+
+.bottom-bar{
+  padding:8px 10px max(10px,env(safe-area-inset-bottom));
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+  background:#050b12f2;border-top:1px solid #ffffff15
+}
+.btn{min-height:54px;border:1px solid #ffffff1d;border-radius:16px;background:#ffffff0f;color:white;font-weight:900}
+.btn:active{transform:scale(.97);background:#ffffff20}
+.btn strong{display:block;font-size:22px}.btn span{font-size:11px;color:#d9eaff}
+
+.drawer{
+  position:absolute;inset:0 0 0 auto;width:min(86vw,360px);z-index:20;
+  background:#06111ef5;transform:translateX(105%);transition:.25s;padding:18px;
+  border-left:1px solid #ffffff1c;box-shadow:-20px 0 40px #0009;overflow:auto
+}
+.drawer.show{transform:none}
+.drawer h2{margin:0 0 14px;font-size:24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:1px solid #ffffff1f;background:#ffffff0c;color:white;border-radius:16px;padding:14px 8px;font-weight:900}
+.manual{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.manual button{border:0;border-radius:14px;padding:16px 4px;font-weight:1000;color:#111}
+.mr{background:#ff5656}.my{background:#ffd43b}.mg{background:#28df80}
+.close{width:100%;margin-top:14px;padding:14px;border-radius:16px;border:1px solid #ffffff20;background:#ffffff10;color:white;font-weight:900}
+.overlay{position:absolute;inset:0;background:#0008;z-index:19;display:none}.overlay.show{display:block}
+
+.night #app{background:linear-gradient(#061020 0 45%,#132234 45% 46%,#20252b 46% 100%)}
+.night .sky{background:linear-gradient(#061020,#213957)}
+.night .sun{background:#ece9d0;box-shadow:0 0 25px #e8e5c0aa}
+.night .sun:after{content:"";position:absolute;width:85%;height:85%;border-radius:50%;background:#061020;left:-18%;top:-14%}
+.night .city{opacity:1}
+
+@media (orientation:landscape){
+  #app{grid-template-rows:46px 1fr 60px}
+  header{min-height:46px;padding-top:max(4px,env(safe-area-inset-top))}
+  .signal{top:2%;left:3%;width:min(15vw,150px)}
+  .head{padding:7px;gap:6px;border-radius:20px}.lamp{border-width:4px}
+  .pole{height:28vh}.status{top:3%;right:3%;width:min(25vw,240px);padding:9px}
+  .state{font-size:26px}.timer{font-size:54px;margin:3px}.guide{font-size:14px}
+  .ped{top:5%;right:31%;width:min(11vw,95px)}
+  .bottom-bar{grid-template-columns:repeat(4,1fr);padding:6px 10px}
+  .btn{min-height:46px}.btn strong{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div id="root">
+<div id="app">
+<header>
+  <div class="title">🚦 동진이 신호등 놀이 3.0</div>
+  <div class="header-actions">
+    <button class="hbtn" id="soundBtn">🔊</button>
+    <button class="hbtn" id="menuBtn">⚙️</button>
+  </div>
+</header>
+
+<main>
+  <div class="sky"><div class="sun"></div></div>
+  <div class="city">
+    <div class="b" style="height:62%"></div><div class="b" style="height:85%"></div><div class="b" style="height:48%"></div>
+    <div class="b" style="height:74%"></div><div class="b" style="height:100%"></div><div class="b" style="height:58%"></div>
+    <div class="b" style="height:80%"></div><div class="b" style="height:52%"></div>
+  </div>
+  <div class="road"><div class="sidewalk"></div><div class="stopline"></div><div class="crosswalk"></div><div class="lane"></div></div>
+
+  <div class="signal">
+    <div class="head">
+      <div class="lamp red" id="redLamp"></div>
+      <div class="lamp yellow" id="yellowLamp"></div>
+      <div class="lamp green" id="greenLamp"></div>
+    </div>
+    <div class="pole"></div><div class="base"></div>
+  </div>
+
+  <div class="status">
+    <div class="state" id="stateText">빨간불</div>
+    <div class="timer" id="timerText">20</div>
+    <div class="guide" id="guideText">정지선에서 멈춰요!</div>
+    <div class="progress"><div id="progressBar"></div></div>
+  </div>
+
+  <div class="ped red" id="pedSignal">
+    <small>보행자 신호</small>
+    <div class="ped-screen" id="pedIcon">🧍</div>
+  </div>
+
+  <div class="car" id="car1">🚗</div>
+  <div class="car car2" id="car2">🚌</div>
+
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer">
+    <h2>놀이 설정</h2>
+    <div class="grid">
+      <button class="opt" id="nightBtn">🌙 야간 모드</button>
+      <button class="opt" id="carBtn">🚙 차량 변경</button>
+      <button class="opt" id="policeBtn">🚓 경찰차 출동</button>
+      <button class="opt" id="fireBtn">🚒 소방차 출동</button>
+      <button class="opt" id="fullBtn">⛶ 전체화면</button>
+      <button class="opt" id="resetBtn">🔄 처음부터</button>
+    </div>
+    <div class="manual">
+      <button class="mr" onclick="manualSignal('red')">빨강</button>
+      <button class="my" onclick="manualSignal('yellow')">노랑</button>
+      <button class="mg" onclick="manualSignal('green')">초록</button>
+    </div>
+    <button class="close" id="closeBtn">닫기</button>
+  </aside>
+</main>
+
+<div class="bottom-bar">
+  <button class="btn" id="playBtn"><strong>⏸️</strong><span>일시정지</span></button>
+  <button class="btn" id="nextBtn"><strong>⏭️</strong><span>다음 신호</span></button>
+  <button class="btn" id="emergencyBtn"><strong>🚨</strong><span>긴급 출동</span></button>
+  <button class="btn" id="menuBtn2"><strong>⚙️</strong><span>놀이 설정</span></button>
+</div>
+</div>
+</div>
+
+<script>
+const phases=[
+ {name:'red',duration:20,state:'빨간불',guide:'정지선에서 멈춰요!',color:'#ff4141'},
+ {name:'green',duration:20,state:'초록불',guide:'좌우를 보고 출발!',color:'#1de27f'},
+ {name:'yellow',duration:3,state:'노란불',guide:'천천히 멈출 준비!',color:'#ffd43b'}
+];
+let idx=0, remain=20, running=true, soundOn=true, manual=false, audioCtx=null, carIndex=0;
+const cars=['🚗','🏎️','🚕','🚙','🛻','🚓','🚒'];
+const $=id=>document.getElementById(id);
+
+function ensureAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()}
+function beep(f=700,d=.1,t='sine',v=.05){if(!soundOn)return;ensureAudio();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+d);o.stop(audioCtx.currentTime+d)}
+function speak(text){if(!soundOn||!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=.95;speechSynthesis.speak(u)}
+
+function update(){
+ const p=phases[idx];
+ ['red','yellow','green'].forEach(n=>$(n+'Lamp').classList.toggle('on',n===p.name));
+ $('stateText').textContent=p.state;$('timerText').textContent=remain;$('guideText').textContent=p.guide;
+ $('stateText').style.color=p.color;$('timerText').style.color=p.color;
+ $('progressBar').style.background=p.color;$('progressBar').style.transform=`scaleX(${remain/p.duration})`;
+ const pg=p.name==='red';$('pedSignal').className='ped '+(pg?'green':'red');$('pedIcon').textContent=pg?'🚶':'🧍';
+ moveCars(p.name);
+}
+function moveCars(state){
+ const go=state==='green';
+ $('car1').classList.toggle('moving',go);$('car2').classList.toggle('moving',go);
+ if(go){$('car1').style.left='110%';$('car2').style.left='110%'}
+ else{
+   if($('car1').style.left==='110%'){$('car1').style.transition='none';$('car1').style.left='-28%';requestAnimationFrame(()=>requestAnimationFrame(()=>$('car1').style.transition='left .9s cubic-bezier(.2,.75,.2,1),transform .25s'))}
+   if($('car2').style.left==='110%'){$('car2').style.transition='none';$('car2').style.left='-35%';requestAnimationFrame(()=>requestAnimationFrame(()=>$('car2').style.transition='left 1.15s cubic-bezier(.2,.75,.2,1),transform .25s'))}
+   setTimeout(()=>{if(phases[idx].name!=='green'){$('car1').style.left='22%';$('car2').style.left='12%'}},80)
+ }
+}
+function changePhase(n=null){
+ idx=n===null?(idx+1)%phases.length:n;remain=phases[idx].duration;manual=false;
+ const p=phases[idx];speak(p.guide);
+ if(p.name==='green'){beep(880,.12);setTimeout(()=>beep(1120,.12),150)}
+ else if(p.name==='yellow')beep(500,.18,'square'); else beep(300,.18);
+ update();
+}
+setInterval(()=>{if(!running||manual)return;remain--;if(remain<=0)changePhase();else{if(phases[idx].name==='red'&&remain<=5)beep(950,.05);update()}},1000);
+
+$('playBtn').onclick=()=>{ensureAudio();running=!running;manual=false;$('playBtn').innerHTML=running?'<strong>⏸️</strong><span>일시정지</span>':'<strong>▶️</strong><span>계속하기</span>'};
+$('nextBtn').onclick=()=>{ensureAudio();changePhase()};
+$('soundBtn').onclick=()=>{soundOn=!soundOn;if(soundOn)ensureAudio();$('soundBtn').textContent=soundOn?'🔊':'🔇'};
+function openMenu(){$('drawer').classList.add('show');$('overlay').classList.add('show')}
+function closeMenu(){$('drawer').classList.remove('show');$('overlay').classList.remove('show')}
+$('menuBtn').onclick=openMenu;$('menuBtn2').onclick=openMenu;$('closeBtn').onclick=closeMenu;$('overlay').onclick=closeMenu;
+$('nightBtn').onclick=()=>{document.body.classList.toggle('night');$('nightBtn').textContent=document.body.classList.contains('night')?'☀️ 주간 모드':'🌙 야간 모드'};
+$('carBtn').onclick=()=>{carIndex=(carIndex+1)%cars.length;$('car1').textContent=cars[carIndex];beep(650,.08)};
+function emergency(type){
+ closeMenu();manual=true;running=false;idx=1;remain=20;
+ $('car1').textContent=type==='fire'?'🚒':'🚓';update();$('car1').style.left='110%';
+ for(let i=0;i<8;i++)setTimeout(()=>beep(i%2?980:680,.12,'square',.04),i*150);
+ setTimeout(()=>{manual=false;running=true;$('car1').textContent=cars[carIndex];changePhase(0);$('playBtn').innerHTML='<strong>⏸️</strong><span>일시정지</span>'},5000)
+}
+$('policeBtn').onclick=()=>emergency('police');$('fireBtn').onclick=()=>emergency('fire');$('emergencyBtn').onclick=()=>emergency('fire');
+$('fullBtn').onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()};
+$('resetBtn').onclick=()=>{idx=0;remain=20;manual=false;running=true;$('car1').textContent=cars[carIndex];$('car1').style.left='22%';$('car2').style.left='12%';update();closeMenu()};
+function manualSignal(name){idx=phases.findIndex(p=>p.name===name);remain=phases[idx].duration;manual=true;running=false;speak(phases[idx].guide);update();closeMenu();$('playBtn').innerHTML='<strong>▶️</strong><span>자동 시작</span>'}
+window.manualSignal=manualSignal;
+document.addEventListener('pointerdown',ensureAudio,{once:true});
+update();
+</script>
+</body>
+</html>
